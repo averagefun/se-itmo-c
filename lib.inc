@@ -24,7 +24,7 @@ string_length:
 ; Принимает указатель на нуль-терминированную строку, выводит её в stdout
 ; function print_string(string_address: rdi)
 print_string:
-    call string_length  ;   len(str) -> rax
+    call string_length  ;   string_length(string_address) -> rax
     mov rdx, rax        ;   rax -> rdx (now rdx contains string length)
                         ;   so rdx contains amount of bytes to write in syscall
 
@@ -48,13 +48,16 @@ print_char:
     ret
 
 ; Переводит строку (выводит символ с кодом 0xA)
+; function print_newline()
 print_newline:
-    xor rax, rax
+    mov rdi, 0xA    ; 0xA -> rdi, so rdi contains new_line symbol
+    call print_char ; print_char(0xA)
     ret
 
 ; Выводит беззнаковое 8-байтовое число в десятичном формате 
 ; Совет: выделите место в стеке и храните там результаты деления
 ; Не забудьте перевести цифры в их ASCII коды.
+; function print_uint(8-byte_number: rdi)
 print_uint:
     xor rax, rax
     ret
@@ -84,7 +87,6 @@ read_char:
 
 read_word:
     ret
- 
 
 ; Принимает указатель на строку, пытается
 ; прочитать из её начала беззнаковое число.
@@ -93,9 +95,6 @@ read_word:
 parse_uint:
     xor rax, rax
     ret
-
-
-
 
 ; Принимает указатель на строку, пытается
 ; прочитать из её начала знаковое число.
