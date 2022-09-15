@@ -1,17 +1,19 @@
 section .text
  
 ; Принимает код возврата и завершает текущий процесс
+; function exit(exit_code: rdi)
 exit: 
-    xor rax, 60     ; write to rax 60 - sys_exit code for syscall
+    xor rax, 60     ; 60 -> rax, sys_exit code for syscall
     syscall     ; system call
     ret 
 
 ; Принимает указатель на нуль-терминированную строку, возвращает её длину
+; function string_length(string_address: rdi) -> str_len: rax
 string_length:
     xor rax, rax    ; clear rax before start counting chars
 
     .loop:
-        cmp byte [rdi+rax], 0   ; cmp current char with 0
+        cmp byte [rdi+rax], 0   ; cmp current char with 0 (terminated sign)
 	    je .end     ; if 0 -> jump to exit
 	    inc rax     ; otherwise increment rax, that counting chars
 	    jmp .loop   ; jump to start of cycle
@@ -20,13 +22,29 @@ string_length:
         ret     ; return from function
 
 ; Принимает указатель на нуль-терминированную строку, выводит её в stdout
+; function print_string(string_address: rdi)
 print_string:
-    xor rax, rax
+    call string_length  ;   len(str) -> rax
+    mov rdx, rax        ;   rax -> rdx (now rdx contains string length)
+                        ;   so rdx contains amount of bytes to write in syscall
+
+    mov rax, 1  ; 1 -> rax, write code for syscall
+    mov rsi, rdi  ; rdi -> rsi, now rsi contains string_address
+    mov rdi, 1  ; 1 -> rdi, descriptor (stdout)
+    syscall
     ret
 
 ; Принимает код символа и выводит его в stdout
+; function print_char(char_code: rdi)
 print_char:
-    xor rax, rax
+    push rdi        ;   rdi -> stack, so rsp addressing to memory, that contains char_code
+    mov rsi, rsp    ; rsp -> rsi, so rdi addressing to memory, that contains char_code
+    pop rdi         ; pop increase rsp, but not clear the char_code
+
+    mov rdx, 1  ; 1 -> rdx (rdx contains amount of bytes to write: in that case 1)
+    mov rax, 1  ; 1 -> rax, write code for syscall
+    mov rdi, 1  ; 1 -> rdi, descriptor (stdout)
+    syscall
     ret
 
 ; Переводит строку (выводит символ с кодом 0xA)
