@@ -3,7 +3,7 @@ section .text
 ; Принимает код возврата и завершает текущий процесс
 ; function exit(exit_code: rdi)
 exit: 
-    xor rax, 60     ; 60 -> rax, sys_exit code for syscall
+    mov rax, 60     ; 60 -> rax, sys_exit code for syscall
     syscall     ; system call
     ret 
 
@@ -110,15 +110,15 @@ print_int:
 ; function string_equals(str1_address: rdi, str2_address, rsi) -> str1.equals(str2): rax
 string_equals:
     xor rax, rax    ;   0 -> rax, so by default strings not equal
+    xor rcx, rcx    ;   0 -> rcx, rcx will be loop pointer
 
     .loop:
-        mov r8b, byte[rdi]  ;   str1[rdi] -> r8b
-        cmp r8b, byte[rsi]  ;   compare str1[rdi] and str2[rsi]
+        mov r8b, byte[rdi+rcx]  ;   str1[rdi] -> r8b
+        cmp r8b, byte[rsi+rcx]  ;   compare str1[rdi] and str2[rsi]
         jne .end            ;   if str1[rdi] != str2[rsi] -> go to .end
         cmp r8b, 0          ;   compare str1[rdi] and 0 (end of the string)
         je .equals          ;   if str1[rdi] == 0 -> go to .equals
-        inc rdi             ;   rdi++
-        inc rsi             ;   rsi++
+        inc rcx             ;   rcx++
         jmp .loop           ;   loop for all chars in strings
 
     .equals:
@@ -227,7 +227,7 @@ parse_uint:
 
     .loop:
         xor r8, r8          ; clear r8
-        mov r8b, byte[rdi]  ; char at address rdi -> r8
+        mov r8b, byte[rdi+rcx]  ; char at address rdi -> r8
 
         cmp r8, '9'         ; check, that char is a digit
         jg .end
@@ -238,7 +238,6 @@ parse_uint:
         mul r10             ; rax * r10 -> (rdx rax), slice left by one digit
         add rax, r8         ; add last digit to rax
 
-        inc rdi             ; rdi++, so take new char   
         inc rcx             ; rcx++ or number_len++
         jmp .loop   
     .end:
