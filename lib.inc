@@ -1,11 +1,12 @@
+%define SYS_EXIT 60
+
 section .text
  
 ; Принимает код возврата и завершает текущий процесс
 ; function exit(exit_code: rdi)
 exit: 
-    mov rax, 60     ; 60 -> rax, sys_exit code for syscall
+    mov rax, SYS_EXIT     ; sys_exit code for syscall
     syscall     ; system call
-    ret 
 
 ; Принимает указатель на нуль-терминированную строку, возвращает её длину
 ; function string_length(string_address: rdi) -> str_len: rax
@@ -50,9 +51,8 @@ print_char:
 ; Переводит строку (выводит символ с кодом 0xA)
 ; function print_newline()
 print_newline:
-    mov rdi, 0xA    ; 0xA -> rdi, so rdi contains new_line symbol
-    call print_char ; print_char(0xA)
-    ret
+    mov rdi, '\n'    ; \n -> rdi, so rdi contains new_line symbol
+    jmp print_char ; print_char(0xA)
 
 ; Выводит беззнаковое 8-байтовое число в десятичном формате 
 ; Совет: выделите место в стеке и храните там результаты деления
@@ -73,7 +73,7 @@ print_uint:
         
         dec rsp  ;  rsp = rsp - 1
         mov byte[rsp], dl   ;   put the last digit (dl) to top of the stack
-        cmp rax, 0  ;   if (rax == 0) -> exit the loop
+        test rax, rax  ;   if (rax == 0) -> exit the loop
         je .end
         jmp .loop
 
@@ -116,7 +116,7 @@ string_equals:
         mov r8b, byte[rdi+rcx]  ;   str1[rdi] -> r8b
         cmp r8b, byte[rsi+rcx]  ;   compare str1[rdi] and str2[rsi]
         jne .end            ;   if str1[rdi] != str2[rsi] -> go to .end
-        cmp r8b, 0          ;   compare str1[rdi] and 0 (end of the string)
+        test r8b, r8b       ;   compare str1[rdi] and 0 (end of the string)
         je .equals          ;   if str1[rdi] == 0 -> go to .equals
         inc rcx             ;   rcx++
         jmp .loop           ;   loop for all chars in strings
@@ -143,7 +143,7 @@ read_char:
 
 ; Принимает: адрес начала буфера, размер буфера
 ; Читает в буфер слово из stdin, пропуская пробельные символы в начале, .
-; Пробельные символы это пробел 0x20, табуляция 0x9 и перевод строки 0xA.
+; Пробельные символы это пробел ' ', табуляция 0x9 и перевод строки '\n'.
 ; Останавливается и возвращает 0 если слово слишком большое для буфера
 ; При успехе возвращает адрес буфера в rax, длину слова в rdx.
 ; При неудаче возвращает 0 в rax
@@ -166,19 +166,19 @@ read_word:
 
     .start_loop:
         call read_char      ; read_char() -> readed_char: rax
-        cmp rax, 0x20       ; check for space
+        cmp rax, ' '       ; check for space
         je .start_loop      ; if (space) -> jump to .start_loop
         cmp rax, 0x9        ; check for tab
         je .start_loop      ; if (tab) -> jump to .start_loop
-        cmp rax, 0xA        ; check for lf
+        cmp rax, '\n'        ; check for lf
         je .start_loop      ; if (lf) -> jump to .start_loop
 
     .loop:
-        cmp rax, 0x20       ; if readed_char == space 
+        cmp rax, ' '       ; if readed_char == space 
         je .end             ;   -> jump to .end
-        cmp rax, 0xA        ; if readed_char == lf (line feed) 
+        cmp rax, '\n'        ; if readed_char == lf (line feed) 
         je .end             ;   -> jump to .end
-        cmp rax, 0x0        ; if readed_char == 0 
+        test rax, rax       ; if readed_char == 0 
         je .end             ;   -> jump to .end
 
         inc r13             ; count one char
@@ -315,7 +315,7 @@ string_copy:
         mov r8b, byte[rdi+rcx]  ;   str[rcx] -> r8
         mov byte[rsi+rcx], r8b  ;   r8 -> buf[rcx]
 
-        cmp r8b, 0  ;   compare char to null-terminated
+        test r8b, r8b  ;   compare char to null-terminated
         je .end
 
         inc rcx
