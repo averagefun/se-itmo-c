@@ -1,6 +1,7 @@
 global exit
 global string_length
 global print_string
+global print_error_string
 global print_char
 global print_newline
 global print_uint
@@ -8,6 +9,7 @@ global print_int
 global string_equals
 global read_char
 global read_word
+global read_line
 global parse_uint
 global parse_int
 global string_copy
@@ -17,7 +19,7 @@ section .text
 ; Принимает код возврата и завершает текущий процесс
 ; function exit(exit_code: rdi)
 exit: 
-    xor rax, 60     ; 60 -> rax, sys_exit code for syscall
+    mov rax, 60     ; 60 -> rax, sys_exit code for syscall
     syscall     ; system call
     ret 
 
@@ -45,6 +47,18 @@ print_string:
     mov rax, 1  ; 1 -> rax, write code for syscall
     mov rsi, rdi  ; rdi -> rsi, now rsi contains string_address
     mov rdi, 1  ; 1 -> rdi, descriptor (stdout)
+    syscall
+    ret
+
+; function print_error_string(string_address: rdi)
+print_error_string:
+    call string_length  ;   string_length(string_address) -> rax
+    mov rdx, rax        ;   rax -> rdx (now rdx contains string length)
+                        ;   so rdx contains amount of bytes to write in syscall
+
+    mov rax, 1  ; 1 -> rax, write code for syscall
+    mov rsi, rdi  ; rdi -> rsi, now rsi contains string_address
+    mov rdi, 2  ; 1 -> rdi, descriptor (stderr)
     syscall
     ret
 
@@ -165,7 +179,7 @@ read_char:
 ;
 ; function read_word(buf_addr: rdi, buf_size: rsi) -> {
 ;    if (success)
-;       return buf_affr: rax, word_size: rdx
+;       return buf_addr: rax, word_size: rdx
 ;    else
 ;       return 0: rax
 ; }
@@ -222,6 +236,67 @@ read_word:
         pop rax             ; buf_addr -> rax
         xor rax, rax        ; 0 -> rax, buffer overflow exception
         ret
+
+
+; read_word vs read_line (line can contains spaces)
+; function read_line(buf_addr: rdi, buf_size: rsi) -> {
+;    if (success)
+;       return buf_addr: rax, line_size: rdx
+;    else
+;       return 0: rax
+; }
+read_line:
+    push rdi                ; save buf_addr to stack
+    push rbx                ; save rbx to stack
+    mov rbx, rdi            ; rdi -> rbx, rbx contains buf_addr
+                            ;   we'l use rbx as buffer pointer
+    push r13                ; save r13 to stack, we'l use r13 as word chars counter
+    push r12                ; save r12 value, we use r12 to keep buf_size
+    mov r12, rsi            ; rsi -> r12
+
+    .start_loop:
+        call read_char      ; read_char() -> readed_char: rax
+        cmp rax, 0x20       ; check for space
+        je .start_loop      ; if (space) -> jump to .start_loop
+        cmp rax, 0x9        ; check for tab
+        je .start_loop      ; if (tab) -> jump to .start_loop
+        cmp rax, 0xA        ; check for lf
+        je .start_loop      ; if (lf) -> jump to .start_loop
+
+    .loop:
+        cmp rax, 0xA        ; if readed_char == lf (line feed) 
+        je .end             ;   -> jump to .end
+        cmp rax, 0x0        ; if readed_char == 0 
+        je .end             ;   -> jump to .end
+
+        inc r13             ; count one char
+
+        cmp r13, r12        ; compare word_size with buf_size
+        je .buf_ovflow      ; if word_size == buf_size -> failed because word_size <= buf_size - 1 
+
+        mov byte[rbx], al   ; readed_char -> buf[rdi] 
+
+        call read_char      ; read_char() -> readed_char: rax
+        inc rbx             ; inc buf pointer
+        jmp .loop 
+
+    .end:
+        mov byte[rbx], 0    ; null-terminator at the end of string
+        mov rdx, r13        ; r13 -> rdx, so rdx contains word_size
+        pop r12             ; restore r12 value from stack
+        pop r13             ; restore r13 value from stack
+        pop rbx             ; restore rbx from stack
+        pop rax             ; buf_addr -> rax
+        ret
+
+    .buf_ovflow:
+        pop r12             ; restore r12 value from stack
+        pop r13             ; restore r13 value from stack
+        pop rbx             ; restore rbx from stack
+        pop rax             ; buf_addr -> rax
+        xor rax, rax        ; 0 -> rax, buffer overflow exception
+        ret
+
 
 ; Принимает указатель на строку, пытается
 ; прочитать из её начала беззнаковое число.
@@ -342,3 +417,4 @@ string_copy:
     .buf_ovflow:
         xor rax, rax
         jmp .end
+
