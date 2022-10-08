@@ -21,7 +21,7 @@ buf_addr: resb buf_size
 section .text
 
 _start:
-    .read_buf
+    .read_buf:
         mov rdi, buf_addr
         mov rsi, buf_size
         call read_line
@@ -29,7 +29,7 @@ _start:
         test rax, rax
         jz .buf_ovflow
 
-    .search_key
+    .search_key:
         mov rdi, buf_addr
         mov rsi, dict_pointer 
         call find_word
@@ -54,7 +54,7 @@ _start:
         call print_error_string
         call .exit
 
-    .not_found
+    .not_found:
         mov rdi, not_found_msg
         call print_error_string
         call .exit

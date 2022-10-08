@@ -5,9 +5,16 @@ LD=ld
 SRC=src
 OBJ=obj
 
+PROGRAM=program
+
+$(PROGRAM): $(OBJ)/main.o $(OBJ)/lib.o $(OBJ)/dict.o 
+	$(LD) $^ -o $@
+
 $(OBJ)/%.o: $(SRC)/%.asm
-	$(ASM) $(ASMFLAGS) $^ -o $@
+	mkdir -p $(OBJ)
+	$(ASM) $(ASMFLAGS) $< -o $@
 
-main: $(OBJ)/%.o
-	$(LD) $(OBJ)/*.o -o $@
+clean:
+	rm -rf $(OBJ) $(PROGRAM)
 
+.PHONY: clean

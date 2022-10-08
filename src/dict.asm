@@ -14,7 +14,7 @@ find_word:
     push rbx        ;   save rbx as callee-saved register
     mov rbx, rsi    ;   we'l use rbx as dict_pointer
 
-    .loop
+    .loop:
         lea rsi, [rbx+8]    ;   rsi refers to key
         call string_equals
         test rax, rax
@@ -23,10 +23,10 @@ find_word:
         test rbx, rbx
         jnz .loop         
 
-    .not_found
+    .not_found:
         xor rbx, rbx
 
-    .exit
+    .exit:
         mov rax, rbx    ;   rbx (dict_pointer) -> rax
         pop rbx         ;   restor rbx from stack
         ret
