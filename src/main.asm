@@ -9,8 +9,8 @@ global _start
 
 section .data
 
-buf_ovflow_msg: db "Error: buffer overflow!", 0
-not_found_msg: db "Error: key not found!", 0
+buf_ovflow_msg: db "Error: buffer overflow!", 0xA, 0
+not_found_msg: db "Error: key not found!", 0xA, 0
 
 
 section .bss
@@ -52,10 +52,10 @@ _start:
     .buf_ovflow:
         mov rdi, buf_ovflow_msg
         call print_error_string
-        call .exit
+        call exit
 
     .not_found:
         mov rdi, not_found_msg
         call print_error_string
-        call .exit
+        call exit
 
