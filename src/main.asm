@@ -7,7 +7,7 @@
 global _start
 
 
-section .data
+section .rodata
 
 buf_ovflow_msg: db "Error: buffer overflow!", 0xA, 0
 not_found_msg: db "Error: key not found!", 0xA, 0
@@ -44,18 +44,21 @@ _start:
 
         lea rdi, [rdi+rax+1] ;  rdi refers to value
         call print_string
-
+        
     .exit:
+        xor rax, rax
         call print_newline
         call exit
 
     .buf_ovflow:
         mov rdi, buf_ovflow_msg
         call print_error_string
+        mov rax, 1
         call exit
 
     .not_found:
         mov rdi, not_found_msg
         call print_error_string
+        mov rax, 1
         call exit
 
