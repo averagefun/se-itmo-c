@@ -8,9 +8,9 @@
 #include "io_utils.h"
 
 // fill img from bmp
-enum read_status from_bmp(FILE* in, struct image* img);
+from_format_reader from_bmp;
 
 // fill file with img
-enum write_status to_bmp(FILE* out, struct image img);
+to_format_writer to_bmp;
 
 #endif

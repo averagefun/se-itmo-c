@@ -25,16 +25,16 @@ enum write_status {
     WRITE_DATA_FAILED
 };
 
+typedef enum read_status(from_format_reader)(FILE*, struct image*);
+
 // read from file 'input_path' using from_format function
-enum read_status read_file(const char* input_path,
-                           enum read_status (*from_format)(FILE*,
-                                                           struct image*),
+enum read_status read_file(const char* input_path, from_format_reader* reader,
                            struct image* input_img);
 
+typedef enum write_status(to_format_writer)(FILE*, struct image);
+
 // write to file 'output_path' using to_format function
-enum write_status write_file(const char* output_path,
-                             enum write_status (*to_format)(FILE*,
-                                                            struct image),
+enum write_status write_file(const char* output_path, to_format_writer* writer,
                              struct image output_img);
 
 #endif

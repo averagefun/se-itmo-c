@@ -16,28 +16,24 @@ char* write_status_msgs_en[] = {
     [WRITE_HEADER_FAILED] = READ_ERROR_STRING("invalid image header"),
     [WRITE_DATA_FAILED] = READ_ERROR_STRING("invalid image bitmap data")};
 
-enum read_status read_file(const char* input_path,
-                           enum read_status (*from_format)(FILE*,
-                                                           struct image*),
+enum read_status read_file(const char* input_path, from_format_reader* reader,
                            struct image* input_img) {
     FILE* input_file = fopen(input_path, "rb");
     if (!input_file) {
         return READ_INVALID_FILE;
     }
-    enum read_status read_status = from_format(input_file, input_img);
+    enum read_status read_status = reader(input_file, input_img);
     fclose(input_file);
     return read_status;
 }
 
-enum write_status write_file(const char* output_path,
-                             enum write_status (*to_format)(FILE*,
-                                                            struct image),
+enum write_status write_file(const char* output_path, to_format_writer* writer,
                              struct image output_img) {
     FILE* output_file = fopen(output_path, "wb");
     if (!output_file) {
         return WRITE_INVALID_FILE;
     }
-    enum write_status write_status = to_format(output_file, output_img);
+    enum write_status write_status = writer(output_file, output_img);
     fclose(output_file);
     return write_status;
 }

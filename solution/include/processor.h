@@ -7,11 +7,13 @@
 #include "image.h"
 #include "io_utils.h"
 
+typedef struct image(transformator)(struct image const);
+
 // specify steps that processor will do
 struct processing_steps {
-    enum read_status (*from_format)(FILE*, struct image*);
-    struct image (*transformator)(struct image const);
-    enum write_status (*to_format)(FILE*, struct image);
+    from_format_reader* reader;
+    transformator* transformator;
+    to_format_writer* writer;
 };
 
 struct io_files {

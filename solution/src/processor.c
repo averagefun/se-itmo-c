@@ -6,8 +6,8 @@
 bool process(struct processing_steps processing_steps,
              struct io_files io_files) {
     struct image input_img;
-    enum read_status read_status = read_file(
-        io_files.input_path, processing_steps.from_format, &input_img);
+    enum read_status read_status =
+        read_file(io_files.input_path, processing_steps.reader, &input_img);
 
     if (read_status == READ_OK) {
         fprintf(stdout, "%s", read_status_msgs_en[READ_OK]);
@@ -20,7 +20,7 @@ bool process(struct processing_steps processing_steps,
     image_destroy(&input_img);
 
     enum write_status write_status = write_file(
-        io_files.output_path, processing_steps.to_format, processed_img);
+        io_files.output_path, processing_steps.writer, processed_img);
     image_destroy(&processed_img);
 
     if (write_status == WRITE_OK) {

@@ -1,7 +1,9 @@
 #ifndef ROTATOR_H
 #define ROTATOR_H
 
+#include "processor.h"
+
 /* create image copy, that rotated by 90 degrees counter-clockwise */
-struct image image_rotate(struct image const source);
+transformator image_rotate;
 
 #endif

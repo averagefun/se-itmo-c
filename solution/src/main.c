@@ -17,9 +17,8 @@ int main(int argc, char **argv) {
     const char *input_path = argv[1];
     const char *output_path = argv[2];
 
-    struct processing_steps bmp_rotate_steps = {.from_format = from_bmp,
-                                                .transformator = image_rotate,
-                                                .to_format = to_bmp};
+    struct processing_steps bmp_rotate_steps = {
+        .reader = from_bmp, .transformator = image_rotate, .writer = to_bmp};
 
     struct io_files my_files = {.input_path = input_path,
                                 .output_path = output_path};
