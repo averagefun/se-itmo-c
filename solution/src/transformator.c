@@ -1,4 +1,4 @@
-#include "rotator.h"
+#include "transformator.h"
 
 #include "image.h"
 

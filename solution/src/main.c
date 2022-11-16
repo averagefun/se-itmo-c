@@ -3,7 +3,7 @@
 #include "bmp.h"
 #include "image.h"
 #include "processor.h"
-#include "rotator.h"
+#include "transformator.h"
 
 int main(int argc, char **argv) {
     // supress 'unused parameters' warning

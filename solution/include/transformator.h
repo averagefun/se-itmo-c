@@ -1,5 +1,5 @@
-#ifndef ROTATOR_H
-#define ROTATOR_H
+#ifndef TRANSFORMATOR_H
+#define TRANSFORMATOR_H
 
 #include "processor.h"
 
