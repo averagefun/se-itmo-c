@@ -161,8 +161,9 @@ bool test_malloc_new_region_not_extended() {
     if (!heap) return false;
 
     // create break in memory
-    mmap(heap, REGION_MIN_SIZE * 5, PROT_READ | PROT_WRITE,
-         MAP_PRIVATE | MAP_FIXED, -1, 0);
+    size_t break_size = REGION_MIN_SIZE * 5;
+    void* memory_break = mmap(heap, break_size, PROT_READ | PROT_WRITE,
+                              MAP_PRIVATE | MAP_FIXED, -1, 0);
 
     size_t malloc_size = real_heap_size * 2;
     void* malloc_addr = _malloc(malloc_size);
@@ -174,6 +175,7 @@ bool test_malloc_new_region_not_extended() {
     _free(malloc_addr);
     print_heap(heap, "Free");
 
+    munmap(memory_break, break_size);
     heap_destroy(heap, real_heap_size);
     return true;
 }
