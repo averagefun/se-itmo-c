@@ -1,7 +1,5 @@
--I include/
 -std=c17
 -pedantic
 -Wall
--Werror
--ggdb 
+-g
 -Wno-attributes

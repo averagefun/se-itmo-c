@@ -9,7 +9,7 @@ LINKER = $(CC)
 
 # asm
 ASM = nasm
-ASMFLAGS = -f elf64
+ASMFLAGS = -f elf64 -g -F dwarf
 
 SOL_DIR = solution
 
@@ -41,7 +41,7 @@ DIRS := $(DIRS_C) $(DIRS_ASM)
 all: build-main
 
 $(TARGET): $(OBJECTS) | $(DIRS)
-	$(LINKER) $(LDFLAGS) $^ -o $@
+	$(LINKER) $^ -o $@
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.asm | $(DIRS_ASM)
 	$(ASM) $(ASMFLAGS) $< -o $@

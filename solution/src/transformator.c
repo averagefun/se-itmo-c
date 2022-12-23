@@ -18,9 +18,11 @@ struct image image_rotate(struct image const source) {
 static struct pixel pixel_apply_sepia(struct pixel pixel) {
     double tone = 0.299 * pixel.r + 0.587 * pixel.g + 0.114 * pixel.b;
 
-    double sr = (tone > 206) ? 255 : tone + 49;  // sr - sepia red
-    double sg = (tone < 14) ? 0 : tone - 14;     // sg - sepia green
-    double sb = (tone < 56) ? 0 : tone - 56;     // sb - sepia blue
+    // double sr = (tone > 206) ? 255 : tone + 49;  // sr - sepia red
+    double sg = (tone < 14) ? 0 : tone - 14;  // sg - sepia green
+    double sb = (tone < 56) ? 0 : tone - 56;  // sb - sepia blue
+
+    double sr = tone + 49;  // sr - sepia red
 
     return (struct pixel){
         .b = (uint8_t)sb, .g = (uint16_t)sg, .r = (uint8_t)sr};

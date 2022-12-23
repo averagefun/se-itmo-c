@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <time.h>
 
 #include "bmp.h"
 #include "image.h"
@@ -6,8 +7,8 @@
 #include "transformator.h"
 #include "transformator_asm.h"
 
-bool test_bmp_transform(transformator my_transformator, const char *input_path,
-                        const char *output_path) {
+long get_bmp_transform_time(transformator my_transformator,
+                            const char *input_path, const char *output_path) {
     struct processing_steps bmp_rotate_steps = {
         .reader = from_bmp,
         .transformator = my_transformator,
@@ -16,7 +17,12 @@ bool test_bmp_transform(transformator my_transformator, const char *input_path,
     struct io_files my_files = {.input_path = input_path,
                                 .output_path = output_path};
 
-    return process(bmp_rotate_steps, my_files);
+    clock_t begin = clock();
+    if (!process(bmp_rotate_steps, my_files)) {
+        return -1;
+    }
+    clock_t end = clock();
+    return (end - begin) * 1000 / CLOCKS_PER_SEC;
 }
 
 int main(int argc, char **argv) {
@@ -32,14 +38,13 @@ int main(int argc, char **argv) {
     const char *output_c_path = argv[2];
     const char *output_asm_path = argv[3];
 
-    if (!test_bmp_transform(image_apply_sepia, input_path, output_c_path)) {
-        return 1;
-    }
+    long time_asm = get_bmp_transform_time(image_apply_sepia_asm, input_path,
+                                           output_asm_path);
+    long time_c =
+        get_bmp_transform_time(image_apply_sepia, input_path, output_c_path);
 
-    if (!test_bmp_transform(image_apply_sepia_asm, input_path,
-                            output_asm_path)) {
-        return 1;
-    }
+    printf("- ASM: %ld ms\n", time_asm);
+    printf("- C: %ld ms\n", time_c);
 
     return 0;
 }

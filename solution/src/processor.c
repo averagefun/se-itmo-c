@@ -9,9 +9,7 @@ bool process(struct processing_steps processing_steps,
     enum read_status read_status =
         read_file(io_files.input_path, processing_steps.reader, &input_img);
 
-    if (read_status == READ_OK) {
-        fprintf(stdout, "%s", read_status_msgs_en[READ_OK]);
-    } else {
+    if (read_status != READ_OK) {
         fprintf(stderr, "%s", read_status_msgs_en[read_status]);
         return false;
     }
@@ -23,11 +21,10 @@ bool process(struct processing_steps processing_steps,
         io_files.output_path, processing_steps.writer, processed_img);
     image_destroy(&processed_img);
 
-    if (write_status == WRITE_OK) {
-        fprintf(stdout, "%s", write_status_msgs_en[WRITE_OK]);
-    } else {
+    if (write_status != WRITE_OK) {
         fprintf(stderr, "%s", write_status_msgs_en[write_status]);
         return false;
     }
+
     return true;
 }

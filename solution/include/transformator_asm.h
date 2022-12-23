@@ -3,7 +3,9 @@
 
 #include "processor.h"
 
-extern int image_apply_sepia_asm_impl(struct image* img);
+extern void image_apply_sepia_asm_impl(struct pixel* source_data,
+                                       struct pixel* new_img_data,
+                                       size_t quad_number);
 
 /* create image copy, that applied sepia filter */
 transformator image_apply_sepia_asm;
