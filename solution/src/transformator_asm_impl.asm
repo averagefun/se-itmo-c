@@ -11,9 +11,6 @@ rbias: dd 49.
 gbias: dd -14.
 bbias: dd -56.
 
-colormax: dd 255.
-colormin: dd 0.
-
 section .text
 
 ; int image_apply_sepia_asm_impl(rdi: source_img_data*, rsi: new_img_data*)
@@ -59,17 +56,18 @@ image_apply_sepia_asm_impl:
     or r9d, ecx
     ; r9d = (b3, b2, b1, -)
 
-    ; r10d will keep 4 red pixels (r2, r1, r4, r3)
+    ; r10d will keep 4 red pixels (r3, r2, r1, r4)
     xor r10, r10
     mov rcx, rax
-    shr rcx, 16
-    and ecx, 0xFF000000
+    shr rcx, 24
+    and ecx, 0x00FF0000
     or r10d, ecx
 
     mov rcx, rax
-    and ecx, 0x00FF0000
+    shr rcx, 8
+    and ecx, 0x0000FF00
     or r10d, ecx
-    ; r10d = (r1, r2, -, -)
+    ; r10d = (-, r2, r1, -)
 
     ; mov 4 bytes (r4, g4, b4, r3) to eax
     mov eax, [rdi+8]
@@ -87,14 +85,15 @@ image_apply_sepia_asm_impl:
     ; r9d = (b3, b2, b1, b4)
 
     mov ecx, eax
-    shr ecx, 16
-    and ecx, 0x0000FF00
+    shl ecx, 24
+    and ecx, 0xFF000000
     or r10d, ecx
 
     mov ecx, eax
+    shr ecx, 24
     and ecx, 0x000000FF
     or r10d, ecx
-    ; r10d = (r2, r1, r4, r3)
+    ; r10d = (r3, r2, r1, r4)
 
     ; -----------------------
 
@@ -137,10 +136,7 @@ image_apply_sepia_asm_impl:
 
     addps xmm3, xmm4
     addps xmm3, xmm5
-
     ; xmm3 = rtone * r + gtone * g + btone * b
-    pxor xmm4, xmm4
-    pxor xmm5, xmm5
 
     movq xmm4, [gbias]
     movq xmm5, [bbias]
@@ -153,27 +149,9 @@ image_apply_sepia_asm_impl:
     punpcklqdq xmm5, xmm5
     punpcklqdq xmm6, xmm6
 
-    ; max -> 255
-    movd xmm7, [colormax]
-    ; min -> 0
-    movd xmm8, [colormin]
-
-    punpckldq xmm7, xmm7
-    punpckldq xmm8, xmm8
-    punpcklqdq xmm7, xmm7
-    punpcklqdq xmm8, xmm8
-
     addps xmm4, xmm3
-    ; minps xmm4, xmm7
-    ; maxps xmm4, xmm8
-
     addps xmm5, xmm3
-    ; minps xmm5, xmm7
-    ; maxps xmm5, xmm8
-
     addps xmm6, xmm3
-    ; minps xmm6, xmm7
-    ; maxps xmm6, xmm8
 
     cvtps2dq xmm4, xmm4
     cvtps2dq xmm5, xmm5
@@ -194,7 +172,7 @@ image_apply_sepia_asm_impl:
 
     ; r8d = (g3, g2, g1, g4)
     ; r9d = (b3, b2, b1, b4)
-    ; r10d = (r2, r1, r4, r3)
+    ; r10d = (r3, r2, r1, r4)
 
     xor rax, rax
     mov ecx, r8d
@@ -210,7 +188,7 @@ image_apply_sepia_asm_impl:
     shl rax, 8
 
     mov ecx, r10d
-    shr ecx, 24
+    shr ecx, 16
     and ecx, 0x000000FF
     or rax, rcx
     shl rax, 8
@@ -228,7 +206,7 @@ image_apply_sepia_asm_impl:
     shl rax, 8
 
     mov ecx, r10d
-    shr ecx, 16
+    shr ecx, 8
     and ecx, 0x000000FF
     or rax, rcx
     shl rax, 8
@@ -249,7 +227,6 @@ image_apply_sepia_asm_impl:
 
     xor rax, rax
     mov ecx, r10d
-    shr ecx, 8
     and ecx, 0x000000FF
     or rax, rcx
     shl eax, 8
@@ -265,6 +242,7 @@ image_apply_sepia_asm_impl:
     shl rax, 8
 
     mov ecx, r10d
+    shr ecx, 24
     and ecx, 0x000000FF
     or rax, rcx
 

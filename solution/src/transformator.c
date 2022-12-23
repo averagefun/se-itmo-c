@@ -15,14 +15,20 @@ struct image image_rotate(struct image const source) {
     return new_img;
 }
 
+double cut(double val) {
+    if (val > 255)
+        return 255;
+    else if (val < 0)
+        return 0;
+    return val;
+}
+
 static struct pixel pixel_apply_sepia(struct pixel pixel) {
     double tone = 0.299 * pixel.r + 0.587 * pixel.g + 0.114 * pixel.b;
 
-    // double sr = (tone > 206) ? 255 : tone + 49;  // sr - sepia red
-    double sg = (tone < 14) ? 0 : tone - 14;  // sg - sepia green
-    double sb = (tone < 56) ? 0 : tone - 56;  // sb - sepia blue
-
-    double sr = tone + 49;  // sr - sepia red
+    double sr = cut(tone + 49);  // sr - sepia red
+    double sg = cut(tone - 14);  // sg - sepia green
+    double sb = cut(tone - 56);  // sb - sepia blue
 
     return (struct pixel){
         .b = (uint8_t)sb, .g = (uint16_t)sg, .r = (uint8_t)sr};
