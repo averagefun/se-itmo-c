@@ -13,7 +13,7 @@ static void heap_destroy(void* heap, size_t sz) {
     munmap(heap, size_from_capacity((block_capacity){.bytes = sz}).bytes);
 }
 
-void print_heap(void const* ptr, char* message) {
+static void print_heap(void const* ptr, char* message) {
     printf("* %s:\n", message);
     debug_heap(DEFAULT_OUTPUT, ptr);
 }
@@ -23,7 +23,7 @@ static struct block_header* get_block_header(void* malloc_addr) {
                                   offsetof(struct block_header, contents));
 }
 
-bool test_malloc() {
+static bool test_simple_malloc() {
     printf("[[ Malloc test ]]\n");
 
     // initialize heap
@@ -47,7 +47,7 @@ bool test_malloc() {
     return true;
 }
 
-bool test_malloc_one_free() {
+static bool test_malloc_one_free() {
     printf("[[ Malloc some blocks and free one random ]]\n");
 
     srand(time(NULL));
@@ -84,7 +84,7 @@ bool test_malloc_one_free() {
     return true;
 }
 
-bool test_malloc_two_free() {
+static bool test_malloc_two_free() {
     printf("[[ Malloc some blocks and free two random ]]\n");
 
     srand(time(NULL));
@@ -124,7 +124,7 @@ bool test_malloc_two_free() {
     return true;
 }
 
-bool test_malloc_new_region_extended() {
+static bool test_malloc_new_region_extended() {
     printf("[[ Malloc new extended region ]]\n");
 
     // initialize heap
@@ -148,7 +148,7 @@ bool test_malloc_new_region_extended() {
     return true;
 }
 
-bool test_malloc_new_region_not_extended() {
+static bool test_malloc_new_region_not_extended() {
     printf("[[ Malloc new not extended region ]]\n");
 
     // initialize heap
@@ -180,6 +180,22 @@ bool test_malloc_new_region_not_extended() {
     return true;
 }
 
-predicate global_tests[] = {
-    test_malloc, test_malloc_one_free, test_malloc_two_free,
-    test_malloc_new_region_extended, test_malloc_new_region_not_extended};
+bool run_tests() {
+    bool (*tests[5])() = {test_simple_malloc, test_malloc_one_free,
+                          test_malloc_two_free, test_malloc_new_region_extended,
+                          test_malloc_new_region_not_extended};
+    size_t n = sizeof(tests) / sizeof(tests[0]);
+
+    bool result = true;
+    for (size_t i = 0; i < n; i++) {
+        printf("===== ↓ Test %zu ↓ =====\n", i + 1);
+        if (!tests[i]()) {
+            printf("===== ↑ FAILED ↑ =====\n");
+            result = false;
+        } else {
+            printf("===== ↑ PASSED ↑ =====\n");
+        }
+        printf("\n");
+    }
+    return result;
+}

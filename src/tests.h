@@ -3,8 +3,6 @@
 
 #include <stdbool.h>
 
-typedef bool (*predicate)();
-
-extern predicate global_tests[];
+bool run_tests();
 
 #endif
